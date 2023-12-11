@@ -1,0 +1,16 @@
+直接用return value 當作OpenFileTable的Index
+根據Manual Page
+The file descriptor returned by a successful call will be the lowest-numbered file descriptor not currently open for the process.
+
+開啟檔案之後，先判斷檔案是否存在，
+接著判斷其id是否大於19。
+以上兩個情況都會回傳-1，但id超過上限的時候，我們還要另外關掉檔案。
+成功開啟之後，記錄到Table裡面。
+
+在其他三個函式中，也有先判斷OpenFileTable[id]是否存在
+不存在也是回傳-1
+
+特別的是Close，為了不直接使用底層的close()函式，
+我們決定善用OpenFile class 的 destructor，藉由delete Table裡面的object，來關掉檔案。
+補充，由於是使用destructor來關掉檔案，故當錯誤發生時，會因為其所使用的sysdep.h的Close，
+遇到錯誤是直接abort，而導致我們無法回傳-1。不過我們認為這是一個合理的取捨。
